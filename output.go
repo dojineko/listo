@@ -10,18 +10,19 @@ type Item struct {
 	Title        string
 	Subtitle     string
 	Icon         string
+	Arg          string
 }
 
 func findAny(query []string, records [][]string) []Item {
 	var result []Item
-	for key, record := range records {
+	for i, record := range records {
 		joined := strings.Join(record, " ")
-		autocomplete := ":" + strconv.Itoa(key) + " "
+		autocomplete := ":" + strconv.Itoa(i) + " "
 
 		result = append(result, Item{
 			Autocomplete: autocomplete,
 			Title:        joined,
-			Subtitle:     "RecordID: " + strconv.Itoa(key),
+			Subtitle:     "RecordID: " + strconv.Itoa(i),
 		})
 	}
 	return result
@@ -30,9 +31,16 @@ func findAny(query []string, records [][]string) []Item {
 func findLine(query []string, record []string) []Item {
 	var result []Item
 
-	for _, column := range record {
+	isSubQuery := len(query) > 1
+	for i, column := range record {
+		if isSubQuery && !strings.Contains(column, query[1]) {
+			continue
+		}
 		result = append(result, Item{
-			Title: column,
+			Autocomplete: query[0] + " " + column,
+			Title:        column,
+			Subtitle:     "ColumnNo: " + strconv.Itoa(i),
+			Arg:          column,
 		})
 	}
 

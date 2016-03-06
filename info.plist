@@ -80,9 +80,9 @@
 				<key>concurrently</key>
 				<false/>
 				<key>escaping</key>
-				<integer>127</integer>
+				<integer>102</integer>
 				<key>script</key>
-				<string></string>
+				<string>echo "{query}" | pbcopy</string>
 				<key>type</key>
 				<integer>0</integer>
 			</dict>

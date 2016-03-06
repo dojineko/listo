@@ -29,14 +29,14 @@ func main() {
 		match := regexLine.FindStringSubmatch(query[0])[1]
 		matchInt, _ := strconv.Atoi(match)
 
-		result = findLine(query[1:], records[matchInt])
+		result = findLine(query, records[matchInt])
 	} else {
 		result = findAny(query, records)
 	}
 
 	switch format {
 	case "alfred":
-		printForAlfred(result)
+		printAlfred(result)
 	default:
 	}
 }
