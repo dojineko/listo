@@ -2,34 +2,41 @@ package main
 
 import (
 	"flag"
+	"regexp"
 	"strconv"
-	"strings"
-
-	"github.com/harasou/alfred"
 )
 
 func main() {
-	wf := alfred.Workflow()
-	defer wf.Print()
-
-	storage := flag.String("storage", "./storage.csv", "Set storage path.")
-	// format := flag.String("format", "alfred", "Set output format.")
+	storage := *(flag.String("storage", "./storage.csv", "Set storage path."))
+	format := *(flag.String("format", "alfred", "Set output format."))
 	flag.Parse()
 
-	records, err := loadCSV(*storage, ',')
+	records, err := loadCSV(storage, ',')
 	if err != nil {
-		initStorage(*storage)
+		initStorage(storage)
 		records = nil
 	}
 
-	for key, record := range records {
-		joined := strings.Join(record, " ")
-		autocomplete := ":" + strconv.Itoa(key)
-		wf.AddItem(&alfred.Item{
-			Uid:          joined,
-			Autocomplete: autocomplete,
-			Title:        joined,
-			Subtitle:     "RecordID " + autocomplete,
-		})
+	query := flag.Args()
+	if len(query) == 0 {
+		return
+	}
+
+	var result []Item
+	linePattern := "^:([0-9]+?)$"
+	if m, _ := regexp.MatchString(linePattern, query[0]); m {
+		regexLine, _ := regexp.Compile(linePattern)
+		match := regexLine.FindStringSubmatch(query[0])[1]
+		matchInt, _ := strconv.Atoi(match)
+
+		result = findLine(query[1:], records[matchInt])
+	} else {
+		result = findAny(query, records)
+	}
+
+	switch format {
+	case "alfred":
+		printForAlfred(result)
+	default:
 	}
 }

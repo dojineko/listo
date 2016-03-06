@@ -2,8 +2,11 @@ package main
 
 import (
 	"encoding/csv"
+	"fmt"
 	"log"
 	"os"
+
+	"github.com/dojineko/alfred"
 )
 
 func initStorage(filename string) error {
@@ -30,4 +33,19 @@ func loadCSV(filename string, demiliter rune) ([][]string, error) {
 	}
 
 	return records, nil
+}
+
+func printForAlfred(items []Item) {
+	var result []alfred.Item
+
+	for _, v := range items {
+		item := alfred.Item{
+			Autocomplete: v.Autocomplete,
+			Title:        v.Title,
+		}
+		item.AddSubtitle(v.Subtitle, "")
+		result = append(result, item)
+	}
+
+	fmt.Print(alfred.Marshal(result))
 }
