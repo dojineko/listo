@@ -34,9 +34,9 @@ func findAny(query []string, records [][]string) []Item {
 func findLine(query []string, record []string) []Item {
 	var result []Item
 
-	isSubQuery := len(query) > 1
+	withSubQuery := len(query) > 1
 	for i, column := range record {
-		if isSubQuery && !strings.Contains(column, query[1]) {
+		if withSubQuery && !strings.Contains(column, query[1]) {
 			continue
 		}
 
@@ -48,10 +48,5 @@ func findLine(query []string, record []string) []Item {
 		})
 	}
 
-	return result
-}
-
-func findColumn(query []string, records [][]string) []Item {
-	var result []Item
 	return result
 }
