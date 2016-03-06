@@ -5,6 +5,7 @@ import (
 	"strings"
 )
 
+// Item contains a result record
 type Item struct {
 	Autocomplete string
 	Title        string
@@ -17,10 +18,12 @@ func findAny(query []string, records [][]string) []Item {
 	var result []Item
 	for i, record := range records {
 		joined := strings.Join(record, " ")
-		autocomplete := ":" + strconv.Itoa(i) + " "
+		if !strings.Contains(joined, query[0]) {
+			continue
+		}
 
 		result = append(result, Item{
-			Autocomplete: autocomplete,
+			Autocomplete: ":" + strconv.Itoa(i) + " ",
 			Title:        joined,
 			Subtitle:     "RecordID: " + strconv.Itoa(i),
 		})
@@ -36,6 +39,7 @@ func findLine(query []string, record []string) []Item {
 		if isSubQuery && !strings.Contains(column, query[1]) {
 			continue
 		}
+
 		result = append(result, Item{
 			Autocomplete: query[0] + " " + column,
 			Title:        column,
