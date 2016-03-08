@@ -11,7 +11,7 @@ func main() {
 	format := *(flag.String("format", "alfred", "Set output format."))
 	flag.Parse()
 
-	records, err := loadCSV(storage, ',')
+	records, err := loadCSV(storage, '\t')
 	if err != nil {
 		initStorage(storage)
 		records = nil
