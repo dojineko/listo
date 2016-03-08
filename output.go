@@ -14,11 +14,20 @@ type Item struct {
 	Arg          string
 }
 
+func existsStrings(src string, query []string) bool {
+	for _, v := range query {
+		if !strings.Contains(src, v) {
+			return false
+		}
+	}
+	return true
+}
+
 func findAny(query []string, records [][]string) []Item {
 	var result []Item
 	for i, record := range records {
 		joined := strings.Join(record, " ")
-		if !strings.Contains(joined, query[0]) {
+		if !existsStrings(joined, query) {
 			continue
 		}
 
@@ -36,7 +45,7 @@ func findLine(query []string, record []string) []Item {
 
 	withSubQuery := len(query) > 1
 	for i, column := range record {
-		if withSubQuery && !strings.Contains(column, query[1]) {
+		if withSubQuery && !existsStrings(column, query[1:]) {
 			continue
 		}
 
