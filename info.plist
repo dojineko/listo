@@ -61,7 +61,7 @@
 				<key>script</key>
 				<string>./listo {query}</string>
 				<key>title</key>
-				<string>keyword</string>
+				<string>listo</string>
 				<key>type</key>
 				<integer>0</integer>
 				<key>withspace</key>
