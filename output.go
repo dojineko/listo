@@ -67,14 +67,18 @@ func findAnyStorage(query []string, path string) []Item {
 		if err != nil {
 			log.Fatal(err)
 		}
-		prefix := "@" + filename
+
+		prefix := AlfredItemPrefix{
+			AutoComplete: "@" + filename,
+			Subtitle:     "Storage: " + filename,
+		}
 		result = append(result, findAny(query, records, prefix)...)
 	}
 
 	return result
 }
 
-func findAny(query []string, records [][]string, prefix string) []Item {
+func findAny(query []string, records [][]string, prefix AlfredItemPrefix) []Item {
 	var result []Item
 	for i, record := range records {
 		joined := strings.Join(record, " ")
@@ -83,15 +87,15 @@ func findAny(query []string, records [][]string, prefix string) []Item {
 		}
 
 		result = append(result, Item{
-			Autocomplete: prefix + " " + ":" + strconv.Itoa(i) + " ",
+			Autocomplete: prefix.AutoComplete + " " + ":" + strconv.Itoa(i) + " ",
 			Title:        joined,
-			Subtitle:     "RecordID: " + strconv.Itoa(i),
+			Subtitle:     prefix.Subtitle + ", RecordNo: " + strconv.Itoa(i),
 		})
 	}
 	return result
 }
 
-func findLine(query []string, record []string, prefix string) []Item {
+func findLine(query []string, record []string, prefix AlfredItemPrefix) []Item {
 	var result []Item
 
 	withSubQuery := len(query) > 1
@@ -101,9 +105,9 @@ func findLine(query []string, record []string, prefix string) []Item {
 		}
 
 		result = append(result, Item{
-			Autocomplete: prefix + " " + query[0] + " " + column,
+			Autocomplete: prefix.AutoComplete + " " + query[0] + " " + column,
 			Title:        column,
-			Subtitle:     "ColumnNo: " + strconv.Itoa(i),
+			Subtitle:     prefix.Subtitle + ", ColumnNo: " + strconv.Itoa(i),
 			Arg:          column,
 		})
 	}

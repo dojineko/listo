@@ -25,11 +25,14 @@ func main() {
 	} else if isFileSelect && len(query) == 1 {
 		result = findStorage(query, storageDir)
 	} else {
-		prefix := query[0]
+		filename := query[0][1:]
 		query = query[1:]
+		prefix := AlfredItemPrefix{
+			AutoComplete: "@" + filename,
+			Subtitle:     "Storage: " + filename,
+		}
 
-		storageName := prefix[1:]
-		records, err := loadCSV(storageDir+"/"+storageName, '\t')
+		records, err := loadCSV(storageDir+"/"+filename, '\t')
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -37,13 +40,14 @@ func main() {
 		if len(query) == 0 {
 			result = append(result, Item{
 				Title:    "キーワードを入力",
-				Subtitle: storageName + "で検索するキーワードを指定してください",
+				Subtitle: filename + "で検索するキーワードを指定してください",
 			})
 		} else {
 			if m, _ := regexp.MatchString(linePattern, query[0]); m {
 				regexLine, _ := regexp.Compile(linePattern)
 				match := regexLine.FindStringSubmatch(query[0])[1]
 				matchInt, _ := strconv.Atoi(match)
+				prefix.Subtitle = prefix.Subtitle + ", RecordNo: " + match
 
 				result = findLine(query, records[matchInt], prefix)
 			} else {

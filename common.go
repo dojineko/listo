@@ -9,6 +9,12 @@ import (
 	"github.com/dojineko/alfred"
 )
 
+// AlfredItemPrefix constains prefix strings for Alfred result items.
+type AlfredItemPrefix struct {
+	AutoComplete string
+	Subtitle     string
+}
+
 func initStorage(filename string) error {
 	_, err := os.Create(filename)
 	if err != nil {
