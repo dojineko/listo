@@ -21,6 +21,8 @@ func main() {
 		isFileSelect, _ = regexp.MatchString("^@.*?\\b", query[0])
 	}
 	if !isFileSelect || len(query) == 0 {
+		result = findAnyStorage(query, storageDir)
+	} else if isFileSelect && len(query) == 1 {
 		result = findStorage(query, storageDir)
 	} else {
 		prefix := query[0]

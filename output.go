@@ -50,6 +50,30 @@ func findStorage(query []string, path string) []Item {
 	return result
 }
 
+func findAnyStorage(query []string, path string) []Item {
+	var result []Item
+	files, err := ioutil.ReadDir(path)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for _, file := range files {
+		filename := file.Name()
+		if m, _ := regexp.MatchString("^\\.", filename); m {
+			continue
+		}
+
+		records, err := loadCSV(path+"/"+filename, '\t')
+		if err != nil {
+			log.Fatal(err)
+		}
+		prefix := "@" + filename
+		result = append(result, findAny(query, records, prefix)...)
+	}
+
+	return result
+}
+
 func findAny(query []string, records [][]string, prefix string) []Item {
 	var result []Item
 	for i, record := range records {
