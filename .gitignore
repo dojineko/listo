@@ -1,4 +1,5 @@
 .DS_Store
 /listo
 /icon.png
-/storage.csv
+/storage/*
+!/storage/.gitkeep

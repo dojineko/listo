@@ -2,41 +2,54 @@ package main
 
 import (
 	"flag"
+	"log"
 	"regexp"
 	"strconv"
 )
 
 func main() {
-	storage := *(flag.String("storage", "./storage.csv", "Set storage path."))
-	format := *(flag.String("format", "alfred", "Set output format."))
 	flag.Parse()
-
-	records, err := loadCSV(storage, '\t')
-	if err != nil {
-		initStorage(storage)
-		records = nil
-	}
-
 	query := flag.Args()
-	if len(query) == 0 {
-		return
-	}
+
+	storageDir := "./storage"
 
 	var result []Item
 	linePattern := "^:([0-9]+?)$"
-	if m, _ := regexp.MatchString(linePattern, query[0]); m {
-		regexLine, _ := regexp.Compile(linePattern)
-		match := regexLine.FindStringSubmatch(query[0])[1]
-		matchInt, _ := strconv.Atoi(match)
 
-		result = findLine(query, records[matchInt])
+	var isFileSelect bool
+	if len(query) > 0 {
+		isFileSelect, _ = regexp.MatchString("^@.*?\\b", query[0])
+	}
+	if !isFileSelect || len(query) == 0 {
+		result = findStorage(query, storageDir)
 	} else {
-		result = findAny(query, records)
+		prefix := query[0]
+		query = query[1:]
+
+		storageName := prefix[1:]
+		records, err := loadCSV(storageDir+"/"+storageName, '\t')
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		if len(query) == 0 {
+			result = append(result, Item{
+				Title:    "キーワードを入力",
+				Subtitle: storageName + "で検索するキーワードを指定してください",
+			})
+		} else {
+			if m, _ := regexp.MatchString(linePattern, query[0]); m {
+				regexLine, _ := regexp.Compile(linePattern)
+				match := regexLine.FindStringSubmatch(query[0])[1]
+				matchInt, _ := strconv.Atoi(match)
+
+				result = findLine(query, records[matchInt], prefix)
+			} else {
+				result = findAny(query, records, prefix)
+			}
+		}
+
 	}
 
-	switch format {
-	case "alfred":
-		printAlfred(result)
-	default:
-	}
+	printAlfred(result)
 }

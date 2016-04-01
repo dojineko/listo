@@ -1,6 +1,10 @@
 package main
 
 import (
+	"io/ioutil"
+	"log"
+	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 )
@@ -23,7 +27,30 @@ func existsStrings(src string, query []string) bool {
 	return true
 }
 
-func findAny(query []string, records [][]string) []Item {
+func findStorage(query []string, path string) []Item {
+	var result []Item
+	files, err := ioutil.ReadDir(path)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for _, file := range files {
+		filename := file.Name()
+		if m, _ := regexp.MatchString("^\\.", filename); m {
+			continue
+		}
+
+		result = append(result, Item{
+			Autocomplete: "@" + filename + " ",
+			Title:        filename,
+			Subtitle:     "Type: " + filepath.Ext(filename),
+		})
+	}
+
+	return result
+}
+
+func findAny(query []string, records [][]string, prefix string) []Item {
 	var result []Item
 	for i, record := range records {
 		joined := strings.Join(record, " ")
@@ -32,7 +59,7 @@ func findAny(query []string, records [][]string) []Item {
 		}
 
 		result = append(result, Item{
-			Autocomplete: ":" + strconv.Itoa(i) + " ",
+			Autocomplete: prefix + " " + ":" + strconv.Itoa(i) + " ",
 			Title:        joined,
 			Subtitle:     "RecordID: " + strconv.Itoa(i),
 		})
@@ -40,7 +67,7 @@ func findAny(query []string, records [][]string) []Item {
 	return result
 }
 
-func findLine(query []string, record []string) []Item {
+func findLine(query []string, record []string, prefix string) []Item {
 	var result []Item
 
 	withSubQuery := len(query) > 1
@@ -50,7 +77,7 @@ func findLine(query []string, record []string) []Item {
 		}
 
 		result = append(result, Item{
-			Autocomplete: query[0] + " " + column,
+			Autocomplete: prefix + " " + query[0] + " " + column,
 			Title:        column,
 			Subtitle:     "ColumnNo: " + strconv.Itoa(i),
 			Arg:          column,
