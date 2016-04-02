@@ -34,9 +34,14 @@ func findStorage(query []string, path string) []Item {
 		log.Fatal(err)
 	}
 
+	queryFilename := query[0][1:]
 	for _, file := range files {
 		filename := file.Name()
 		if m, _ := regexp.MatchString("^\\.", filename); m {
+			continue
+		}
+
+		if !strings.Contains(filename, queryFilename) {
 			continue
 		}
 

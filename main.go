@@ -18,7 +18,7 @@ func main() {
 
 	var isFileSelect bool
 	if len(query) > 0 {
-		isFileSelect, _ = regexp.MatchString("^@.*?\\b", query[0])
+		isFileSelect, _ = regexp.MatchString("^@.*?$", query[0])
 	}
 	if !isFileSelect || len(query) == 0 {
 		result = findAnyStorage(query, storageDir)
