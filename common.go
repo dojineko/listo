@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/csv"
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/dojineko/alfred"
@@ -13,15 +12,6 @@ import (
 type AlfredItemPrefix struct {
 	AutoComplete string
 	Subtitle     string
-}
-
-func initStorage(filename string) error {
-	_, err := os.Create(filename)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return nil
 }
 
 func loadCSV(filename string, demiliter rune) ([][]string, error) {
