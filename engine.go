@@ -7,20 +7,11 @@ import (
 	"strings"
 )
 
-func findStorage(query []string, path string) []Item {
+func findStorage(path string, filter string) []Item {
 	var result []Item
 
-	var queryFilename string
-	if len(query) > 0 && len(query[0]) > 1 {
-		queryFilename = query[0][1:]
-	}
-
-	filelist := getFileList(path, true)
+	filelist := getStorageList(path, true, filter)
 	for _, filename := range filelist {
-		if len(queryFilename) > 0 && !strings.Contains(filename, queryFilename) {
-			continue
-		}
-
 		result = append(result, Item{
 			Autocomplete: "@" + filename + " ",
 			Title:        filename,
@@ -73,7 +64,7 @@ func findInRecord(query []string, record []string, prefix AlfredItemModifier) []
 func findInAllStorage(query []string, path string) []Item {
 	var result []Item
 
-	filelist := getFileList(path, true)
+	filelist := getStorageList(path, true, "")
 	for _, filename := range filelist {
 		records, err := loadCSV(path+"/"+filename, '\t')
 		if err != nil {

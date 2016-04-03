@@ -27,7 +27,7 @@ type Item struct {
 	Arg          string
 }
 
-func getFileList(path string, excludeDotfile bool) []string {
+func getStorageList(path string, excludeDotfile bool, filter string) []string {
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
 		log.Fatal(err)
@@ -39,6 +39,9 @@ func getFileList(path string, excludeDotfile bool) []string {
 		filename := file.Name()
 		isDotfile, _ := regexp.MatchString("^\\.", filename)
 		if excludeDotfile && isDotfile {
+			continue
+		}
+		if len(filter) > 0 && !strings.Contains(filename, filter) {
 			continue
 		}
 		result = append(result, filename)

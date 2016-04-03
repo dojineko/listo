@@ -16,7 +16,11 @@ func execute(query []string, path string) []Item {
 	var isFileSelect bool
 	isFileSelect, _ = regexp.MatchString("^@.*?$", query[0])
 	if isFileSelect && len(query) == 1 {
-		return findStorage(query, path)
+		var storageFilter string
+		if len(query[0]) > 1 {
+			storageFilter = query[0][1:]
+		}
+		return findStorage(path, storageFilter)
 	}
 
 	// 1つめのクエリが@から始まり、クエリが1より多い場合はストレージ内絞り込み検索
