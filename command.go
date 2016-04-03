@@ -6,7 +6,31 @@ import (
 	"strconv"
 )
 
-func execute(query []string, path string) []Item {
+func commandListStorage(args []string, path string) {
+	// 引数があればフィルタに使う
+	var filter string
+	if len(args) > 0 {
+		filter = args[0]
+	}
+
+	var result []Item
+	storages := getStorageList(path, true, filter)
+	for _, filename := range storages {
+		result = append(result, Item{
+			Autocomplete: filename,
+			Title:        filename,
+			Arg:          filename,
+		})
+	}
+
+	printAlfred(result)
+}
+
+func commandExecute(args []string, path string) {
+	printAlfred(commandExecuteInternal(args, path))
+}
+
+func commandExecuteInternal(query []string, path string) []Item {
 	// queryが空の場合は終了
 	if len(query) == 0 {
 		return nil

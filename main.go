@@ -8,21 +8,28 @@ import (
 
 // Options contains go-flags setting.
 type Options struct {
+	ListStorage bool `long:"list" description:"Show installed storage"`
 }
 
-var opts Options
-
 func main() {
+	var opts Options
 	parser := flags.NewParser(&opts, flags.Default)
-	args, _ := parser.Parse()
-	if len(args) == 0 {
-		parser.WriteHelp(os.Stdout)
+	args, err := parser.Parse()
+	if err != nil {
 		os.Exit(1)
 	}
 
-	query := args
 	path := "./storage"
 
-	result := execute(query, path)
-	printAlfred(result)
+	// インストール済みのストレージを検索
+	if opts.ListStorage {
+		commandListStorage(args, path)
+		return
+	}
+
+	// クエリを元に検索を実行
+	if len(args) > 0 {
+		commandExecute(args, path)
+		return
+	}
 }
