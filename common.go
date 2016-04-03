@@ -3,15 +3,57 @@ package main
 import (
 	"encoding/csv"
 	"fmt"
+	"io/ioutil"
+	"log"
 	"os"
+	"regexp"
+	"strings"
 
 	"github.com/dojineko/alfred"
 )
 
-// AlfredItemPrefix constains prefix strings for Alfred result items.
-type AlfredItemPrefix struct {
+// AlfredItemModifier constains prefix strings for Alfred result items.
+type AlfredItemModifier struct {
 	AutoComplete string
 	Subtitle     string
+}
+
+// Item contains a result record
+type Item struct {
+	Autocomplete string
+	Title        string
+	Subtitle     string
+	Icon         string
+	Arg          string
+}
+
+func getFileList(path string, excludeDotfile bool) []string {
+	files, err := ioutil.ReadDir(path)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var result []string
+
+	for _, file := range files {
+		filename := file.Name()
+		isDotfile, _ := regexp.MatchString("^\\.", filename)
+		if excludeDotfile && isDotfile {
+			continue
+		}
+		result = append(result, filename)
+	}
+
+	return result
+}
+
+func existsStrings(src string, query []string) bool {
+	for _, v := range query {
+		if !strings.Contains(src, v) {
+			return false
+		}
+	}
+	return true
 }
 
 func loadCSV(filename string, demiliter rune) ([][]string, error) {

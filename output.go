@@ -1,50 +1,22 @@
 package main
 
 import (
-	"io/ioutil"
 	"log"
 	"path/filepath"
-	"regexp"
 	"strconv"
 	"strings"
 )
 
-// Item contains a result record
-type Item struct {
-	Autocomplete string
-	Title        string
-	Subtitle     string
-	Icon         string
-	Arg          string
-}
-
-func existsStrings(src string, query []string) bool {
-	for _, v := range query {
-		if !strings.Contains(src, v) {
-			return false
-		}
-	}
-	return true
-}
-
 func findStorage(query []string, path string) []Item {
 	var result []Item
-	files, err := ioutil.ReadDir(path)
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	var queryFilename string
 	if len(query) > 0 && len(query[0]) > 1 {
 		queryFilename = query[0][1:]
 	}
 
-	for _, file := range files {
-		filename := file.Name()
-		if m, _ := regexp.MatchString("^\\.", filename); m {
-			continue
-		}
-
+	filelist := getFileList(path, true)
+	for _, filename := range filelist {
 		if len(queryFilename) > 0 && !strings.Contains(filename, queryFilename) {
 			continue
 		}
@@ -61,34 +33,28 @@ func findStorage(query []string, path string) []Item {
 
 func findAnyStorage(query []string, path string) []Item {
 	var result []Item
-	files, err := ioutil.ReadDir(path)
-	if err != nil {
-		log.Fatal(err)
-	}
 
-	for _, file := range files {
-		filename := file.Name()
-		if m, _ := regexp.MatchString("^\\.", filename); m {
-			continue
-		}
-
+	filelist := getFileList(path, true)
+	for _, filename := range filelist {
 		records, err := loadCSV(path+"/"+filename, '\t')
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		prefix := AlfredItemPrefix{
+		prefix := AlfredItemModifier{
 			AutoComplete: "@" + filename,
 			Subtitle:     "Storage: " + filename,
 		}
+
 		result = append(result, findAny(query, records, prefix)...)
 	}
 
 	return result
 }
 
-func findAny(query []string, records [][]string, prefix AlfredItemPrefix) []Item {
+func findAny(query []string, records [][]string, prefix AlfredItemModifier) []Item {
 	var result []Item
+
 	for i, record := range records {
 		joined := strings.Join(record, " ")
 		if !existsStrings(joined, query) {
@@ -101,10 +67,11 @@ func findAny(query []string, records [][]string, prefix AlfredItemPrefix) []Item
 			Subtitle:     prefix.Subtitle + ", RecordNo: " + strconv.Itoa(i),
 		})
 	}
+
 	return result
 }
 
-func findLine(query []string, record []string, prefix AlfredItemPrefix) []Item {
+func findLine(query []string, record []string, prefix AlfredItemModifier) []Item {
 	var result []Item
 
 	withSubQuery := len(query) > 1

@@ -7,48 +7,60 @@ import (
 )
 
 func execute(query []string, path string) []Item {
-	var result []Item
-
-	var isFileSelect bool
-	if len(query) > 0 {
-		isFileSelect, _ = regexp.MatchString("^@.*?$", query[0])
+	// queryが空の場合は終了
+	if len(query) == 0 {
+		return nil
 	}
-	if !isFileSelect || len(query) == 0 {
-		result = findAnyStorage(query, path)
-	} else if isFileSelect && len(query) == 1 {
-		result = findStorage(query, path)
-	} else {
+
+	// 1つめのクエリが@から始まり、クエリが1つの場合はストレージ絞り込み検索
+	var isFileSelect bool
+	isFileSelect, _ = regexp.MatchString("^@.*?$", query[0])
+	if isFileSelect && len(query) == 1 {
+		return findStorage(query, path)
+	}
+
+	// 1つめのクエリが@から始まり、クエリが1より多い場合はストレージ内絞り込み検索
+	if isFileSelect && len(query) > 1 {
+		// ファイル名のみ抽出して1つ目のクエリを破棄
 		filename := query[0][1:]
 		query = query[1:]
-		prefix := AlfredItemPrefix{
+		prefix := AlfredItemModifier{
 			AutoComplete: "@" + filename,
 			Subtitle:     "Storage: " + filename,
 		}
 
+		// クエリがなくなった場合はプレースホルダを返す
+		if len(query) == 0 {
+			return []Item{
+				Item{
+					Title:    "キーワードを入力",
+					Subtitle: filename + "で検索するキーワードを指定してください",
+				},
+			}
+		}
+
+		// ストレージを読み込む
 		records, err := loadCSV(path+"/"+filename, '\t')
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		if len(query) == 0 {
-			result = append(result, Item{
-				Title:    "キーワードを入力",
-				Subtitle: filename + "で検索するキーワードを指定してください",
-			})
-		} else {
-			linePattern := "^:([0-9]+?)$"
-			if m, _ := regexp.MatchString(linePattern, query[0]); m {
-				regexLine, _ := regexp.Compile(linePattern)
-				match := regexLine.FindStringSubmatch(query[0])[1]
-				matchInt, _ := strconv.Atoi(match)
-				prefix.Subtitle = prefix.Subtitle + ", RecordNo: " + match
+		// 行指定がある場合は行内絞り込み検索
+		linePattern := "^:([0-9]+?)$"
+		if isLineSelect, _ := regexp.MatchString(linePattern, query[0]); isLineSelect {
+			regexLine, _ := regexp.Compile(linePattern)
+			match := regexLine.FindStringSubmatch(query[0])[1]
+			matchInt, _ := strconv.Atoi(match)
+			prefix.Subtitle = prefix.Subtitle + ", RecordNo: " + match
 
-				result = findLine(query, records[matchInt], prefix)
-			} else {
-				result = findAny(query, records, prefix)
-			}
+			// 行内絞り込み検索
+			return findLine(query, records[matchInt], prefix)
 		}
+
+		// ストレージ内絞り込み検索
+		return findAny(query, records, prefix)
 	}
 
-	return result
+	// それ以外の場合はストレージ横断検索
+	return findAnyStorage(query, path)
 }
