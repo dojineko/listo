@@ -31,28 +31,7 @@ func findStorage(query []string, path string) []Item {
 	return result
 }
 
-func findAnyStorage(query []string, path string) []Item {
-	var result []Item
-
-	filelist := getFileList(path, true)
-	for _, filename := range filelist {
-		records, err := loadCSV(path+"/"+filename, '\t')
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		prefix := AlfredItemModifier{
-			AutoComplete: "@" + filename,
-			Subtitle:     "Storage: " + filename,
-		}
-
-		result = append(result, findAny(query, records, prefix)...)
-	}
-
-	return result
-}
-
-func findAny(query []string, records [][]string, prefix AlfredItemModifier) []Item {
+func findInStorage(query []string, records [][]string, prefix AlfredItemModifier) []Item {
 	var result []Item
 
 	for i, record := range records {
@@ -71,7 +50,7 @@ func findAny(query []string, records [][]string, prefix AlfredItemModifier) []It
 	return result
 }
 
-func findLine(query []string, record []string, prefix AlfredItemModifier) []Item {
+func findInRecord(query []string, record []string, prefix AlfredItemModifier) []Item {
 	var result []Item
 
 	withSubQuery := len(query) > 1
@@ -86,6 +65,27 @@ func findLine(query []string, record []string, prefix AlfredItemModifier) []Item
 			Subtitle:     prefix.Subtitle + ", ColumnNo: " + strconv.Itoa(i),
 			Arg:          column,
 		})
+	}
+
+	return result
+}
+
+func findInAllStorage(query []string, path string) []Item {
+	var result []Item
+
+	filelist := getFileList(path, true)
+	for _, filename := range filelist {
+		records, err := loadCSV(path+"/"+filename, '\t')
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		prefix := AlfredItemModifier{
+			AutoComplete: "@" + filename,
+			Subtitle:     "Storage: " + filename,
+		}
+
+		result = append(result, findInStorage(query, records, prefix)...)
 	}
 
 	return result

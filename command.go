@@ -45,7 +45,7 @@ func execute(query []string, path string) []Item {
 			log.Fatal(err)
 		}
 
-		// 行指定がある場合は行内絞り込み検索
+		// レコード指定がある場合はレコード内絞り込み検索
 		linePattern := "^:([0-9]+?)$"
 		if isLineSelect, _ := regexp.MatchString(linePattern, query[0]); isLineSelect {
 			regexLine, _ := regexp.Compile(linePattern)
@@ -53,14 +53,14 @@ func execute(query []string, path string) []Item {
 			matchInt, _ := strconv.Atoi(match)
 			prefix.Subtitle = prefix.Subtitle + ", RecordNo: " + match
 
-			// 行内絞り込み検索
-			return findLine(query, records[matchInt], prefix)
+			// レコード内絞り込み検索
+			return findInRecord(query, records[matchInt], prefix)
 		}
 
 		// ストレージ内絞り込み検索
-		return findAny(query, records, prefix)
+		return findInStorage(query, records, prefix)
 	}
 
 	// それ以外の場合はストレージ横断検索
-	return findAnyStorage(query, path)
+	return findInAllStorage(query, path)
 }
