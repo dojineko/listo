@@ -54,6 +54,14 @@ func commandInstallStorage(srcPath string, storagePath string) {
 	}
 }
 
+func commandRemoveStorage(storageName string, storagePath string) {
+	targetPath := storagePath + "/" + storageName
+	err := os.Remove(targetPath)
+	if err != nil {
+		panic(err)
+	}
+}
+
 func commandExecute(args []string, storagePath string) {
 	printAlfred(commandExecuteInternal(args, storagePath))
 }

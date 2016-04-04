@@ -10,6 +10,7 @@ import (
 type Options struct {
 	ListStorage    bool   `long:"list" description:"Show installed storage"`
 	InstallStorage string `long:"install" description:"Install a storage"`
+	RemoveStorage  string `long:"remove" description:"Remove a installed storage"`
 }
 
 func main() {
@@ -31,6 +32,12 @@ func main() {
 	// ストレージをインストール
 	if parser.FindOptionByLongName("install").IsSet() {
 		commandInstallStorage(opts.InstallStorage, storagePath)
+		return
+	}
+
+	// ストレージを削除
+	if parser.FindOptionByLongName("remove").IsSet() {
+		commandRemoveStorage(opts.RemoveStorage, storagePath)
 		return
 	}
 
