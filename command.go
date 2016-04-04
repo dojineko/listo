@@ -29,37 +29,37 @@ func commandListStorage(args []string, storagePath string) {
 	printAlfred(result)
 }
 
-func commandInstallStorage(srcPath string, storagePath string) {
+func commandInstallStorage(srcPath string, storagePath string) error {
 	filename := path.Base(srcPath)
 	destPath := storagePath + "/" + filename
 
 	// コピー元のファイルを開く
 	src, err := os.Open(srcPath)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	defer src.Close()
 
 	// 出力先のファイルを作る
 	dest, err := os.Create(destPath)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	defer dest.Close()
 
 	// データのコピーを行う
 	_, err = io.Copy(dest, src)
 	if err != nil {
-		panic(err)
+		return err
 	}
+
+	return nil
 }
 
-func commandRemoveStorage(storageName string, storagePath string) {
+func commandRemoveStorage(storageName string, storagePath string) error {
 	targetPath := storagePath + "/" + storageName
 	err := os.Remove(targetPath)
-	if err != nil {
-		panic(err)
-	}
+	return err
 }
 
 func commandExecute(args []string, storagePath string) {

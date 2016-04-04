@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	flags "github.com/jessevdk/go-flags"
@@ -29,15 +30,23 @@ func main() {
 		return
 	}
 
-	// ストレージをインストール
+	// ストレージを追加
 	if parser.FindOptionByLongName("install").IsSet() {
-		commandInstallStorage(opts.InstallStorage, storagePath)
+		err := commandInstallStorage(opts.InstallStorage, storagePath)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
 		return
 	}
 
 	// ストレージを削除
 	if parser.FindOptionByLongName("remove").IsSet() {
-		commandRemoveStorage(opts.RemoveStorage, storagePath)
+		err := commandRemoveStorage(opts.RemoveStorage, storagePath)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
 		return
 	}
 
