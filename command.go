@@ -1,12 +1,15 @@
 package main
 
 import (
+	"io"
 	"log"
+	"os"
+	"path"
 	"regexp"
 	"strconv"
 )
 
-func commandListStorage(args []string, path string) {
+func commandListStorage(args []string, storagePath string) {
 	// 引数があればフィルタに使う
 	var filter string
 	if len(args) > 0 {
@@ -14,7 +17,7 @@ func commandListStorage(args []string, path string) {
 	}
 
 	var result []Item
-	storages := getStorageList(path, true, filter)
+	storages := getStorageList(storagePath, true, filter)
 	for _, filename := range storages {
 		result = append(result, Item{
 			Autocomplete: filename,
@@ -26,11 +29,36 @@ func commandListStorage(args []string, path string) {
 	printAlfred(result)
 }
 
-func commandExecute(args []string, path string) {
-	printAlfred(commandExecuteInternal(args, path))
+func commandInstallStorage(srcPath string, storagePath string) {
+	filename := path.Base(srcPath)
+	destPath := storagePath + "/" + filename
+
+	// コピー元のファイルを開く
+	src, err := os.Open(srcPath)
+	if err != nil {
+		panic(err)
+	}
+	defer src.Close()
+
+	// 出力先のファイルを作る
+	dest, err := os.Create(destPath)
+	if err != nil {
+		panic(err)
+	}
+	defer dest.Close()
+
+	// データのコピーを行う
+	_, err = io.Copy(dest, src)
+	if err != nil {
+		panic(err)
+	}
 }
 
-func commandExecuteInternal(query []string, path string) []Item {
+func commandExecute(args []string, storagePath string) {
+	printAlfred(commandExecuteInternal(args, storagePath))
+}
+
+func commandExecuteInternal(query []string, storagePath string) []Item {
 	// queryが空の場合は終了
 	if len(query) == 0 {
 		return nil
@@ -44,7 +72,7 @@ func commandExecuteInternal(query []string, path string) []Item {
 		if len(query[0]) > 1 {
 			storageFilter = query[0][1:]
 		}
-		return findStorage(path, storageFilter)
+		return findStorage(storagePath, storageFilter)
 	}
 
 	// 1つめのクエリが@から始まり、クエリが1より多い場合はストレージ内絞り込み検索
@@ -68,7 +96,7 @@ func commandExecuteInternal(query []string, path string) []Item {
 		}
 
 		// ストレージを読み込む
-		records, err := loadCSV(path+"/"+filename, '\t')
+		records, err := loadCSV(storagePath+"/"+filename, '\t')
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -90,5 +118,5 @@ func commandExecuteInternal(query []string, path string) []Item {
 	}
 
 	// それ以外の場合はストレージ横断検索
-	return findInAllStorage(query, path)
+	return findInAllStorage(query, storagePath)
 }
